@@ -1,0 +1,6 @@
+اضافه کردن switalert2
+
+اضافه کردن pagination به صفحه course
+
+اضافه کردن search به course
+
