@@ -21,6 +21,8 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireNonAlphanumeric = false;
 });
 
+builder.Services.AddCors();
+
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
@@ -33,6 +35,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("*"));
+
 
 app.UseAuthorization();
 
