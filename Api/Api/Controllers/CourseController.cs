@@ -22,4 +22,15 @@ public class CourseController : ControllerBase
 
         return Ok(courses);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCourses(int id)
+    {
+        var course = await _context.courses.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (course == null)
+            return NotFound("Not Found");
+
+        return Ok(course);
+    }
 }
