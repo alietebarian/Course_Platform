@@ -17,7 +17,9 @@ export default function Header() {
     <header className="w-full bg-white shadow-md">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-8">
-          <img src="/Logo.png" alt="logo" className="cursor-pointer h-10" />
+          <Link to={'/'}>
+            <img src="/Logo.png" alt="logo" className="cursor-pointer h-10" />
+          </Link>
           <nav>
             <ul className="flex gap-6 text-gray-600 font-medium">
               {headerLink.map((item, index) => (
@@ -26,9 +28,7 @@ export default function Header() {
                     key={index}
                     className={`hover:text-gray-700 cursor-pointer p-2 transition 
                     ${
-                      currentPath === item.link
-                        ? "bg-gray-100 rounded-md"
-                        : ""
+                      currentPath === item.link ? "bg-gray-100 rounded-md" : ""
                     }`}
                   >
                     {item.name}
