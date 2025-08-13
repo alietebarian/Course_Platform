@@ -11,43 +11,69 @@ export default function Header() {
   ];
 
   const location = useLocation();
-  const currentPath = location.pathname;  
+  const currentPath = location.pathname;
+
+  const token = localStorage.getItem("token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.reload(); // برای ریفرش شدن UI بعد از خروج
+  };
+
+  const userToken = localStorage.getItem("user")
+  const userName = JSON.parse(userToken)
 
   return (
     <header className="w-full bg-white shadow-md">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        {/* Logo & Navigation */}
         <div className="flex items-center gap-8">
-          <Link to={'/'}>
+          <Link to="/">
             <img src="/Logo.png" alt="logo" className="cursor-pointer h-10" />
           </Link>
           <nav>
             <ul className="flex gap-6 text-gray-600 font-medium">
-              {headerLink.map((item, index) => (
-                <Link to={item.link}>
-                  <li
-                    key={index}
-                    className={`hover:text-gray-700 cursor-pointer p-2 transition 
-                    ${
+              {headerLink.map((item) => (
+                <li key={item.link}>
+                  <Link
+                    to={item.link}
+                    className={`hover:text-gray-700 cursor-pointer p-2 transition ${
                       currentPath === item.link ? "bg-gray-100 rounded-md" : ""
                     }`}
                   >
                     {item.name}
-                  </li>
-                </Link>
+                  </Link>
+                </li>
               ))}
             </ul>
           </nav>
         </div>
 
-        {/* Buttons */}
-        <div className="flex gap-4">
-          <button className="px-5 rounded-2xl hover:bg-orange-50 transition">
-            Sign Up
-          </button>
-          <button className="px-5 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition">
-            Login
-          </button>
-        </div>
+        {/* Auth Buttons */}
+        {token ? (
+          <div>
+            <span className="mr-5 font-bold">welcome {userName?.fullName}</span>
+            <button
+              onClick={handleLogout}
+              className="px-5 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition cursor-pointer"
+            >
+              Log Out
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-4">
+            <Link to="/register">
+              <button className="px-5 py-2 rounded-2xl hover:bg-orange-50 cursor-pointer transition">
+                Sign Up
+              </button>
+            </Link>
+            <Link to="/login">
+              <button className="px-5 py-2 bg-orange-500 text-white cursor-pointer rounded-xl hover:bg-orange-600 transition">
+                Login
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );
