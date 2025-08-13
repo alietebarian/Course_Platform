@@ -1,6 +1,53 @@
-import React from "react";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import React, { useState } from "react";
+
+interface userInputProps{
+  firstName: string,
+  lastName: string,
+  message: string,
+  phone: string,
+  email: string,
+  subject: string
+}
 
 export default function Contact() {
+
+  const [userInput, setUserInput] = useState<userInputProps>({
+    firstName: '', lastName: '', email: '', message: '', phone: '', subject: ''
+  })
+
+  const handleUserInput = (e) => {
+    setUserInput({...userInput, [e.target.name]: e.target.value})
+  }
+
+  const CommentsMutataion = useMutation({
+    mutationFn: async () => {
+      const res = await axios.post("http://localhost:5126/api/Comments", {
+        firstName: userInput.firstName,
+        lastName: userInput.lastName,
+        message: userInput.message,
+        phone: userInput.phone,
+        email: userInput.email,
+        subject: userInput.subject
+      });
+    },
+    onSuccess: () => {
+      console.log("success");
+      setUserInput({
+        firstName: '', lastName: '', email: '', message: '', phone: '', subject: ''
+      });
+    },
+    onError: () => {
+      console.log("Error");
+    }
+  })
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    CommentsMutataion.mutate()
+  }
+
   return (
     <div className="bg-gray-50 min-h-screen py-16 px-6">
       {/* Header */}
@@ -17,7 +64,10 @@ export default function Contact() {
       {/* Contact Section */}
       <div className="bg-white shadow-xl rounded-2xl p-8 flex flex-col md:flex-row gap-10 max-w-6xl mx-auto">
         {/* Form */}
-        <form className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form
+          className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6"
+          onSubmit={handleSubmit}
+        >
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               First Name
@@ -26,6 +76,9 @@ export default function Contact() {
               type="text"
               placeholder="Enter First Name"
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              name="firstName"
+              value={userInput.firstName}
+              onChange={handleUserInput}
             />
           </div>
 
@@ -37,6 +90,9 @@ export default function Contact() {
               type="text"
               placeholder="Enter Last Name"
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              name="lastName"
+              value={userInput.lastName}
+              onChange={handleUserInput}
             />
           </div>
 
@@ -45,9 +101,12 @@ export default function Contact() {
               Email
             </label>
             <input
-              type="email"
+              type="text"
               placeholder="Enter your Email"
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              name="email"
+              value={userInput.email}
+              onChange={handleUserInput}
             />
           </div>
 
@@ -59,6 +118,9 @@ export default function Contact() {
               type="tel"
               placeholder="Enter Phone Number"
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              name="phone"
+              value={userInput.phone}
+              onChange={handleUserInput}
             />
           </div>
 
@@ -70,6 +132,9 @@ export default function Contact() {
               type="text"
               placeholder="Enter your Subject"
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              name="subject"
+              value={userInput.subject}
+              onChange={handleUserInput}
             />
           </div>
 
@@ -81,6 +146,9 @@ export default function Contact() {
               placeholder="Enter your Message here..."
               rows={5}
               className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none resize-none"
+              name="message"
+              value={userInput.message}
+              onChange={handleUserInput}
             />
           </div>
 
