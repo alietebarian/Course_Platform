@@ -21,6 +21,16 @@ interface PaginatedResult {
   totalCount: number;
 }
 
+interface userInputProps {
+  id: number
+  firstName: string;
+  lastName: string;
+  message: string;
+  phone: string;
+  email: string;
+  subject: string;
+}
+
 
 const GetCourses = async (): Promise<PaginatedResult> => {
   const res = await axios.get<PaginatedResult>(
@@ -28,6 +38,12 @@ const GetCourses = async (): Promise<PaginatedResult> => {
   );
   return res.data;
 };
+
+const GetComment = async () => {
+  const res = await axios.get("http://localhost:5126/api/Comments");
+
+  return res.data
+}
 
 export default function Home() {
   const navLogos = [
@@ -39,6 +55,11 @@ export default function Home() {
     "Logo (6).png",
     "Logo (7).png",
   ];
+
+  const { data: comments } = useQuery({
+    queryKey: ['comments'],
+    queryFn: GetComment
+  })
 
   const benefitDetails = [
     {
@@ -265,8 +286,13 @@ export default function Home() {
 
         {/* کارت‌ها */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-          {Ourtestimonial.map((item, index) => (
-            <TestimonialCart key={index} desc={item.desc} name={item.name} />
+          {comments?.slice(0, 4).map((item, index) => (
+            <TestimonialCart
+              key={index}
+              desc={item.message}
+              name={item.firstname}
+              message={item.message}
+            />
           ))}
         </div>
       </div>
