@@ -1,0 +1,124 @@
+﻿using Api.data;
+using Api.models;
+using Api.models.Dto;
+using Api.Utility;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+namespace Api.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class AuthController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+    private string sekretKey;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IConfiguration _configuration;
+    public AuthController(ApplicationDbContext context, IConfiguration configuration,
+        RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
+    {
+        _context = context;
+        _configuration = configuration;
+        sekretKey = configuration.GetValue<string>("ApiSettings:Secret");
+        _roleManager = roleManager;
+        _userManager = userManager;
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
+    {
+        var userFromDb = await _context.applicationUsers
+            .FirstOrDefaultAsync(x => x.UserName.ToLower() == model.UserName.ToLower());
+
+        if(userFromDb != null)
+            return BadRequest("username already exist");
+
+        if (model.Role.ToLower() != SD.Role_Admin && model.Role.ToLower() != SD.Role_Customer.ToLower())
+            return BadRequest("role is invalid");
+
+        ApplicationUser newuser = new ApplicationUser()
+        {
+            UserName = model.UserName,
+            Email = model.UserName,
+            NormalizedEmail = model.UserName.ToUpper(),
+            Name = model.Name,
+        };
+
+        var result = await _userManager.CreateAsync(newuser, model.Password);
+
+        if (result.Succeeded)
+        {
+            if (!await _roleManager.RoleExistsAsync(SD.Role_Admin))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(SD.Role_Admin));
+                await _roleManager.CreateAsync(new IdentityRole(SD.Role_Customer));
+            }
+
+            if (model.Role.ToLower() == SD.Role_Admin)
+                await _userManager.AddToRoleAsync(newuser, SD.Role_Admin);
+            else
+                await _userManager.AddToRoleAsync(newuser, SD.Role_Customer);
+
+            return Ok("Registration successful");
+        }
+
+        return BadRequest("Error while registering");
+    }
+
+    [HttpPost("Login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
+    {
+        ApplicationUser userFromDb = _context.applicationUsers
+            .FirstOrDefault(u => u.UserName.ToLower() == model.UserName.ToLower());
+
+        if (userFromDb == null)
+        {
+            return BadRequest("Username or password is incorrect");
+        }
+
+        bool isValid = await _userManager.CheckPasswordAsync(userFromDb, model.Password);
+
+        if (!isValid)
+        {
+            return BadRequest("Username or password is incorrect");
+        }
+
+        var roles = await _userManager.GetRolesAsync(userFromDb);
+        JwtSecurityTokenHandler tokenHandler = new();
+        byte[] key = Encoding.ASCII.GetBytes(sekretKey);
+
+        SecurityTokenDescriptor tokenDescriptor = new()
+        {
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+            new Claim("fullName", userFromDb.Name),
+            new Claim("id", userFromDb.Id.ToString()),
+            new Claim(ClaimTypes.Email, userFromDb.UserName),
+            new Claim(ClaimTypes.Role, roles.FirstOrDefault() ?? "User"),
+            }),
+            Expires = DateTime.UtcNow.AddDays(7),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature
+            )
+        };
+
+        SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+
+        LoginResponseDto loginResponse = new()
+        {
+            Email = userFromDb.Email,
+            Token = tokenHandler.WriteToken(token),
+        };
+
+        return Ok(loginResponse);
+    }
+}

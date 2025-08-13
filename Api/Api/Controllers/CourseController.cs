@@ -1,4 +1,5 @@
 ﻿using Api.data;
+using Api.models.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,12 +17,32 @@ public class CourseController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCourses()
+    public async Task<ActionResult<PaginatedCoursesResult>> GetCourses([FromQuery] CourseQueryParams query)
     {
-        var courses = await _context.courses.ToListAsync();
+        var queryable = _context.courses.AsQueryable();
 
-        return Ok(courses);
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var searchLower = query.Search.ToLower();
+            queryable = queryable.Where(x => x.Name.ToLower().Contains(searchLower));
+        }
+
+        int totalItem = await queryable.CountAsync();
+
+        var items = await queryable
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync();
+
+        var result = new PaginatedCoursesResult
+        {
+            Items = items,
+            TotalCount = totalItem
+        };
+
+        return Ok(result);
     }
+
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCourses(int id)
