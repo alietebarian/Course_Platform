@@ -75,7 +75,7 @@ export default function Contact() {
             <input
               type="text"
               placeholder="Enter First Name"
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              className="w-full border rounded-lg px-4 py-2 outline-none"
               name="firstName"
               value={userInput.firstName}
               onChange={handleUserInput}
@@ -89,7 +89,7 @@ export default function Contact() {
             <input
               type="text"
               placeholder="Enter Last Name"
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              className="w-full border rounded-lg px-4 py-2 outline-none"
               name="lastName"
               value={userInput.lastName}
               onChange={handleUserInput}
@@ -103,7 +103,7 @@ export default function Contact() {
             <input
               type="text"
               placeholder="Enter your Email"
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              className="w-full border rounded-lg px-4 py-2 outline-none"
               name="email"
               value={userInput.email}
               onChange={handleUserInput}
@@ -117,7 +117,7 @@ export default function Contact() {
             <input
               type="tel"
               placeholder="Enter Phone Number"
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              className="w-full border rounded-lg px-4 py-2 outline-none"
               name="phone"
               value={userInput.phone}
               onChange={handleUserInput}
@@ -131,7 +131,7 @@ export default function Contact() {
             <input
               type="text"
               placeholder="Enter your Subject"
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              className="w-full border rounded-lg px-4 py-2 outline-none"
               name="subject"
               value={userInput.subject}
               onChange={handleUserInput}
@@ -145,7 +145,7 @@ export default function Contact() {
             <textarea
               placeholder="Enter your Message here..."
               rows={5}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none resize-none"
+              className="w-full border rounded-lg px-4 py-2 outline-none resize-none"
               name="message"
               value={userInput.message}
               onChange={handleUserInput}
