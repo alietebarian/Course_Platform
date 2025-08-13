@@ -6,21 +6,28 @@ import TestimonialCart from "../components/TestimonialCart";
 import PriceCart from "../components/PriceCart";
 import Frequently from "../components/Frequently";
 
-interface courseProps {
-  id: number,
-  name: string,
-  title: string,
-  description: string,
-  teacher: string,
-  level: string,
-  image: string
+interface CourseProps {
+  id: number;
+  name: string;
+  title: string;
+  description: string;
+  teacher: string;
+  level: string;
+  image: string;
 }
 
-const GetCourses = async (): Promise<courseProps[]>=> {
-  const res = await axios.get("http://localhost:5126/api/Course");
-
-  return res.data
+interface PaginatedResult {
+  items: CourseProps[];
+  totalCount: number;
 }
+
+
+const GetCourses = async (): Promise<PaginatedResult> => {
+  const res = await axios.get<PaginatedResult>(
+    "http://localhost:5126/api/Course?Search=&PageNumber=1&PageSize=6"
+  );
+  return res.data;
+};
 
 export default function Home() {
   const navLogos = [
@@ -225,9 +232,10 @@ export default function Home() {
 
         {/* Courses Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
-          {courses?.slice(9, 15)?.map((item, index) => (
+          {courses?.items?.map((item, index) => (
             <CourseCart
               key={index}
+              id={item.id}
               img={item.image}
               level={item.level}
               teacher={item.teacher}
@@ -307,7 +315,7 @@ export default function Home() {
         </div>
 
         {/* Right Section */}
-        <div className="md:w-2/3 flex flex-col gap-4">
+        <div className="md:w-2/3 flex flex-col gap-4 ">
           {frequency.map((item, index) => (
             <Frequently
               key={index}

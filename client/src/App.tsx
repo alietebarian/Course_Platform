@@ -9,6 +9,8 @@ import Courses from './pages/Courses';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import CourseDetails from './pages/CourseDetails';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 export default function App() {
   return (
@@ -23,6 +25,8 @@ export default function App() {
             <Route path="/aboutus" element={<AboutUs />} />
             <Route path="/priceing" element={<Pricing />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

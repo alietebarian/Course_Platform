@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import CourseCart from "../components/CourseCart";
+import { useState } from "react";
+import { IoMdSearch } from "react-icons/io";
 
 interface courseProps {
   id: number;
@@ -12,13 +14,29 @@ interface courseProps {
   image: string;
 }
 
-const GetCourses = async (): Promise<courseProps[]> => {
-  const res = await axios.get("http://localhost:5126/api/Course");
+interface PaginatedCoursesResult {
+  items: courseProps[];
+  totalCount: number;
+}
 
+const GetCourses = async (
+  page: number,
+  pageSize: number,
+  search: string
+): Promise<PaginatedCoursesResult> => {
+  const res = await axios.get(
+    `http://localhost:5126/api/Course?Search=${encodeURIComponent(
+      search
+    )}&PageNumber=${page}&PageSize=${pageSize}`
+  );
   return res.data;
 };
 
 export default function Courses() {
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const pageSize = 6;
 
   const {
     data: courses,
@@ -26,60 +44,81 @@ export default function Courses() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["courses"],
-    queryFn: GetCourses,
+    queryKey: ["courses", page, searchQuery, pageSize],
+    queryFn: () => GetCourses(page, pageSize, searchQuery),
+    keepPreviousData: true,
   });
 
   if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {(error as Error).message}</div>;
 
-  if (isError) return <div>Error: {error.message}</div>;
+  const totalCount = courses?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    setSearchQuery(searchTerm);
+  };
 
   return (
     <div>
-      {/* main */}
-      <div className="flex justify-around py-8">
-        <span className="text-2xl font-black">Online Courses on Design and <br />
-          Development</span>
-        <span className="text-sm ">
-          Welcome to our online course page, where you can enhance your skills
-          in design and <br /> development. Choose from our carefully curated selection
-          of 10 courses designed to <br /> provide you with comprehensive knowledge and
-          practical experience. Explore the <br /> courses below and find the perfect
-          fit for your learning journey.
-        </span>
+      <div className="flex justify-center py-8">
+        <form
+          className="hidden md:flex mr-16 items-center bg-white rounded-xl shadow-md overflow-hidden"
+          onSubmit={handleSearchSubmit}
+        >
+          <input
+            type="text"
+            placeholder="Search items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 text-black outline-none w-48 md:w-64 transition-all duration-200"
+          />
+          <button
+            type="submit"
+            className="flex items-center gap-1 bg-orange-500 px-4 py-2 hover:bg-orange-600 text-white transition-colors duration-200"
+          >
+            <IoMdSearch size={18} />
+            <span className="hidden sm:inline">Search</span>
+          </button>
+        </form>
       </div>
-      <div className="px-6 py-12 bg-gray-50">
-              {/* Header */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
-                <div className="flex items-center gap-3">
-                  <span className="w-2 h-10 bg-orange-500 rounded"></span>
-                  <h2 className="text-3xl font-bold">Our Courses</h2>
-                </div>
-                <p className="text-gray-600 max-w-2xl">
-                  Lorem ipsum dolor sit amet consectetur. Tempus tincidunt etiam eget
-                  elit id imperdiet et. Cras eu sit dignissim lorem nibh et. Ac cum
-                  eget habitasse in velit fringilla feugiat senectus in.
-                </p>
-                <button className="bg-white border border-gray-300 px-5 py-2 rounded-lg shadow hover:bg-gray-100 transition">
-                  View All
-                </button>
-              </div>
-      
-              {/* Courses Grid */}
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
-                {courses?.map((item, index) => (
-                  <CourseCart
-                    key={index}
-                    id={item.id}
-                    img={item.image}
-                    level={item.level}
-                    teacher={item.teacher}
-                    title={item.title}
-                    desc={item.description}
-                  />
-                ))}
-              </div>
-            </div>
+
+      {/* Courses Grid */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+        {courses?.items?.map((item) => (
+          <CourseCart
+            key={item.id}
+            id={item.id}
+            img={item.image}
+            level={item.level}
+            teacher={item.teacher}
+            title={item.title}
+            desc={item.description}
+          />
+        ))}
+      </div>
+
+      <div className="flex justify-center mt-6 gap-2">
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+        >
+          Prev
+        </button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
